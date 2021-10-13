@@ -1,23 +1,22 @@
 #!/bin/bash
 rm nbody
 rm *.o
-g++ -c -std=c++11 nbody_hp.cpp
+g++ -c -std=c++11 -Ofast -fopenmp nbody_hp.cpp
 g++ -o nbody nbody_hp.o
 
 n=( 10 20 50 100 200 500 1000 2000 5000 10000 )
+p=( 1, 4, 8, 16, 18, 20 )
 #n=( 5 10 20 50 )
 
-echo "Form: N, Time(Microseconds)" >> hp.csv
+echo "Form: N, P, Time(Microseconds)" >> hp.csv
+
 for i in "${n[@]}"
 do
     echo "Running size $i" 
-    #if [ $i -lt 2001 ]
-    #then
-    #    for j in {1..5}
-    #    do
-    #        ./nbody "$i" >> hp.txt
-    #    done
-    #else
-       ./nbody "$i" >> hp.csv
-    #fi
+    for j in "${p[@]}"
+    do
+        echo "Running thread $j" 
+        ./nbody "$i $j" >> hp.csv
+    done
+
 done

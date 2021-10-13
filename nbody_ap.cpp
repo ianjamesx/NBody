@@ -4,6 +4,8 @@
 #include <time.h>
 #include <chrono>
 #include <algorithm>
+#include <omp.h>
+#include <string>
 using namespace std;
 
 const double T = .001;
@@ -25,20 +27,29 @@ void v_divide(vector<double> &v, double s);
 int main(int argc, char *argv[]){
 
     int n = atoi(argv[1]);
+    int procs = atoi(argv[2]);
     int k = 6;
 
-    auto start = chrono::high_resolution_clock::now();
+    //auto start = chrono::high_resolution_clock::now();
+
+    double start = omp_get_wtime();
 
     vector<body> bodies(n);
     initBodies(bodies);
 
+    int j;
+    double j, x_force, y_force, a_x, a_y;
+
     for(int t = 0; t < k; t++){
 
         //for each body, get the total force 
+        #pragma omp parallel num_threads(p)
+        #pragma omp for private(j, x_force, y_force, a_x, a_y)
         for(int i=0; i < bodies.size(); i++){
 
-            double x_force = 0.0, y_force = 0.0;
-            for(int j=0; j < bodies.size(); j++){
+            x_force = 0.0;
+            y_force = 0.0;
+            for(j=0; j < bodies.size(); j++){
                 if(i == j) continue;
                 vector<double> f = force(bodies[i], bodies[j]);
                 x_force += f[0];
@@ -46,8 +57,8 @@ int main(int argc, char *argv[]){
             }
 
             //calc acceleration
-            double a_x = x_force / bodies[i].mass;
-            double a_y = y_force / bodies[i].mass;
+            a_x = x_force / bodies[i].mass;
+            a_y = y_force / bodies[i].mass;
 
             //update velocity then position
             bodies[i].velocity[0] += T * a_x;
@@ -59,13 +70,15 @@ int main(int argc, char *argv[]){
 
     }
 
-    auto stop = chrono::high_resolution_clock::now();
-    auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
+    //auto stop = chrono::high_resolution_clock::now();
+    //auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
+    //double time = duration.count() / 10000000.0;
 
-    double time = duration.count() / 10000000.0;
+    double end = omp_get_wtime();
+    double time = end - start;
     
     double p = ((k * (n * n))*1.0) / time;
-    cout << n << ", " << p << endl;
+    cout << fixed << n << ", " << procs << ", " << p << endl;
 
     return 0;
 
