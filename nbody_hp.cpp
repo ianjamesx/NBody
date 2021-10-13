@@ -12,8 +12,8 @@ const double M = 1.0;
 
 struct body {
     double mass = M;
-    vector<double> position;
-    vector<double> velocity{ 0,0 };
+    double position[2];
+    double velocity[2] = {0, 0};
 };
 
 void initBodies(vector<body> &bodies);
@@ -28,7 +28,7 @@ int main(int argc, char *argv[]){
 
     int n = atoi(argv[1]);
     //cout << n << endl;
-    int k = 4;
+    int k = 6;
 
     vector<body> bodies(n);
     initBodies(bodies);
@@ -79,9 +79,11 @@ int main(int argc, char *argv[]){
 
     auto stop = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
+
+    double time = duration.count() / 10000000.0;
     
-    double p = ((k * (n * n))*1.0) / duration.count();
-    cout << n << ", " << p << endl;
+    double p = ((k * (n * n))*1.0) / time;
+    cout << fixed << n << ", " << p << endl;
     //cout << "Time taken by function: "<< duration.count() << " microseconds" << endl;
     //cout << n << ", " << duration.count() << endl;
 
@@ -134,10 +136,10 @@ void initBodies(vector<body> &bodies){
     double spacing = 1.0 / bodies.size();
     for(int i=0; i < bodies.size(); i++){
         double y_offset = rand() * 1.0;
-        bodies[i].position.push_back(i * spacing);
-        bodies[i].position.push_back(y_offset);
-        bodies[i].velocity.push_back(0);
-        bodies[i].velocity.push_back(0);
+        bodies[i].position[0] = (i * spacing);
+        bodies[i].position[1] = (y_offset);
+        bodies[i].velocity[0] = 0;
+        bodies[i].velocity[1] = 0;
         bodies[i].mass = M;
     }
 }
